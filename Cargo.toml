@@ -15,7 +15,7 @@ homepage = "https://github.com/solve-poker/Poker-Query-Language"
 keywords = ["GTO", "PQL", "holdem", "poker", "shortdeck"]
 license = "MIT"
 repository = "https://github.com/solve-poker/Poker-Query-Language"
-version = "0.2.2"
+version = "0.3.0"
 
 [profile.release]
 codegen-units = 1
@@ -24,6 +24,15 @@ lto = true
 opt-level = 3
 panic = "abort"
 
+[profile.release-test]
+inherits = "release"
+codegen-units = 256
+debug-assertions = true
+incremental = true
+lto = false
+overflow-checks = true
+panic = "unwind"
+
 [workspace.dependencies]
 approx = "0.5.1"
 bitflags = "2.13.0"
@@ -31,15 +40,15 @@ clap = { version = "4.6.1", features = ["derive"] }
 criterion = "0.8.2"
 derive_more = { version = "2", features = ["full"] }
 fastrand = "2.4.1"
-getrandom = "0.4.2"
-itertools = "0.14.0"
+getrandom = "0.4.3"
+itertools = "0.15.0"
 lalrpop = { version = "0.23.1", features = ["lexer"] }
 lalrpop-util = { version = "0.23.1", features = ["lexer"] }
-openpql-core = { path = "openpql-core", version = "0.2.2" }
-openpql-macro = { path = "openpql-macro", version = "0.2.2" }
-openpql-pql-parser = { path = "openpql-pql-parser", version = "0.2.2" }
-openpql-prelude = { path = "openpql-prelude", version = "0.2.2" }
-openpql-range-parser = { path = "openpql-range-parser", version = "0.2.2" }
+openpql-core = { path = "openpql-core", version = "0.3.0" }
+openpql-macro = { path = "openpql-macro", version = "0.3.0" }
+openpql-pql-parser = { path = "openpql-pql-parser", version = "0.3.0" }
+openpql-prelude = { path = "openpql-prelude", version = "0.3.0" }
+openpql-range-parser = { path = "openpql-range-parser", version = "0.3.0" }
 quickcheck = { version = "1.1.0", features = [] }
 quickcheck_macros = "1.2.0"
 rand = "0.10.1"
@@ -50,7 +59,7 @@ serde = { version = "1.0.228", features = ["derive"] }
 serde_test = "1.0.177"
 smallvec = "1.15.2"
 speedy = "0.8.7"
-wasm-bindgen-test = "0.3.73"
+wasm-bindgen-test = "0.3.76"
 
 [workspace.lints.clippy]
 absolute_paths = { level = "warn", priority = 10 }

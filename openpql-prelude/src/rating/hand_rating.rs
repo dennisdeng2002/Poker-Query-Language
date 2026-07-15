@@ -1,10 +1,7 @@
 use std::fmt;
 
-use crate::{
-    HandType, Rank16, RatingInner,
-    eval::index::{IdxThreeRanks, IdxTwoRanks},
-    rating::HandRatingView,
-};
+use super::{ColexThreeRanks, ColexTwoRanks};
+use crate::{HandType, Rank16, RatingInner, rating::HandRatingView};
 
 /// Bit-packed poker hand rating comparable by integer order.
 ///
@@ -66,23 +63,23 @@ const fn rev_rank_idx(idx: RatingInner) -> Rank16 {
 #[must_use]
 #[inline]
 const fn comb2(ranks: Rank16) -> RatingInner {
-    IdxTwoRanks::from_r16(ranks).0 as RatingInner
+    ColexTwoRanks::from_r16(ranks).0 as RatingInner
 }
 
 #[inline]
-fn rev_comb2(i: RatingInner) -> Rank16 {
-    IdxTwoRanks(IdxTwoRanks::MASK_USED & i.to_le_bytes()[0]).to_r16()
+const fn rev_comb2(i: RatingInner) -> Rank16 {
+    ColexTwoRanks(ColexTwoRanks::MASK_USED & i.to_le_bytes()[0]).to_r16()
 }
 
 #[must_use]
 #[inline]
 const fn comb3(ranks: Rank16) -> RatingInner {
-    IdxThreeRanks::from_r16(ranks).0 as RatingInner
+    ColexThreeRanks::from_r16(ranks).0 as RatingInner
 }
 
 #[inline]
-fn rev_comb3(i: RatingInner) -> Rank16 {
-    IdxThreeRanks(IdxThreeRanks::MASK_USED & i).to_r16()
+const fn rev_comb3(i: RatingInner) -> Rank16 {
+    ColexThreeRanks(ColexThreeRanks::MASK_USED & i).to_r16()
 }
 
 const TOTAL_LEADING_ZEROS: RatingInner = 15;
@@ -117,7 +114,7 @@ impl HandRating {
         Self(Self::MASK_PAIR | rank_idx(pair) << OFFSET_COMB3 | comb3(kicker))
     }
 
-    pub(crate) fn parse_pair(self) -> (Rank16, Rank16) {
+    pub(crate) const fn parse_pair(self) -> (Rank16, Rank16) {
         (
             rev_rank_idx((Self::MASK_PAIR ^ self.0) >> OFFSET_COMB3),
             rev_comb3(self.0),
@@ -128,7 +125,7 @@ impl HandRating {
         Self(Self::MASK_TWOPAIR | comb2(pairs) << OFFSET_RANK_IDX | rank_idx(kicker))
     }
 
-    pub(crate) fn parse_twopair(self) -> (Rank16, Rank16) {
+    pub(crate) const fn parse_twopair(self) -> (Rank16, Rank16) {
         (rev_comb2(self.0 >> OFFSET_RANK_IDX), rev_rank_idx(self.0))
     }
 
@@ -136,7 +133,7 @@ impl HandRating {
         Self(Self::MASK_TRIPS | rank_idx(trips) << OFFSET_HI | comb2(kicker))
     }
 
-    pub(crate) fn parse_trips(self) -> (Rank16, Rank16) {
+    pub(crate) const fn parse_trips(self) -> (Rank16, Rank16) {
         (rev_rank_idx(self.0 >> OFFSET_HI), rev_comb2(self.0))
     }
 

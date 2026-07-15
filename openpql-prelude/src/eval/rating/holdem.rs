@@ -1,4 +1,4 @@
-use super::{flush_ranks, ranks_by_suit_count};
+use super::flush_ranks;
 use crate::{Card64, HandRating, Rank16};
 
 #[inline]
@@ -120,7 +120,7 @@ pub const fn eval_holdem_flush(c64: Card64) -> Option<HandRating> {
 /// Panics on an invalid hand.
 #[inline]
 pub const fn eval_holdem_noflush(c64: Card64) -> HandRating {
-    let [has1, has2, has3, has4] = ranks_by_suit_count(c64);
+    let [has1, has2, has3, has4] = c64.ranks_by_suit_count();
 
     if let Some(ranking) = eval_quads(has4, has1) {
         return ranking;

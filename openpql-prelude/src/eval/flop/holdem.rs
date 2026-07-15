@@ -6,7 +6,7 @@ use crate::{
 // TODO: refactor later
 #[allow(clippy::missing_panics_doc)]
 pub fn eval_flop_holdem(player: Card64, board: Board) -> FlopHandCategory {
-    board.flop.map_or(FlopHandCategory::Nothing, |flop| {
+    board.flop().map_or(FlopHandCategory::Nothing, |flop| {
         let flop64 = Card64::from(flop);
         let rating = eval_holdem(player | flop64);
         let HandRatingView {

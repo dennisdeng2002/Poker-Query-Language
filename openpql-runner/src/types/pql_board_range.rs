@@ -78,6 +78,13 @@ pub mod tests {
     use crate::*;
 
     #[test]
+    fn test_debug() {
+        let range = PQLBoardRange::default();
+
+        assert_eq!(format!("{range:?}"), r#"PQLBoardRange("*", Holdem)"#);
+    }
+
+    #[test]
     fn test_err() {
         for game in [PQLGame::Holdem, PQLGame::Omaha, PQLGame::ShortDeck] {
             let res = PQLBoardRange::try_from((game, "AAAAKK")).unwrap_err();

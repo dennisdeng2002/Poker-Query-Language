@@ -1,13 +1,12 @@
 use std::mem::transmute;
 
-use crate::{Card64, CardCount, Rank16, Suit, eval::ranks_by_suit_count};
+use crate::{Card64, CardCount, Rank16, Suit};
 
 mod holdem;
 mod omaha;
 mod shortdeck;
 
 pub use holdem::eval_holdem;
-#[allow(unused_imports)]
 use holdem::{eval_pair, eval_quads, eval_trips, eval_twopair, mk_straight_ranking};
 pub use omaha::{eval_omaha, eval_omaha5};
 pub use shortdeck::eval_shortdeck;

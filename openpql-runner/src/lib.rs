@@ -65,6 +65,7 @@ fn parse_cards(text: &str) -> Option<PQLCardSet> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 pub mod tests {
     pub use std::fmt::Write;
 

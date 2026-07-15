@@ -26,9 +26,7 @@ impl VmCache {
         player: &[PQLCard],
         board: PQLBoard,
     ) -> PQLHiRating {
-        let (iso_board, map) = board.to_isomorphic_ev();
-        let iso_player = IsomorphicHand::from_slice_and_map(player, map);
-        let key = (iso_board, iso_player);
+        let key = board.to_isomorphic_pair(player);
 
         self.ratings.get(&key).unwrap_or_else(|| {
             let rating = game.eval_rating(player.into(), board.to_card64());

@@ -86,6 +86,10 @@ Try it in your browser at **[pql-playground.solve.poker](https://pql-playground.
 
 MIT — see [LICENSE](LICENSE).
 
+# Bibliography
+
+- K. Waugh, 2013. A Fast and Optimal Hand Isomorphism Algorithm.
+
 ## Acknowledgments
 
 Thanks to the Odds Oracle ([propokertools.com](https://propokertools.com)) team for pioneering PQL.

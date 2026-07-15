@@ -17,7 +17,6 @@ mod stack_value;
 mod static_data;
 mod unary_op;
 mod unary_op_logic;
-#[allow(clippy::module_inception)]
 mod vm;
 
 pub use binop::*;

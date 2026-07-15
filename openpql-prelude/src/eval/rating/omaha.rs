@@ -1,4 +1,4 @@
-use super::{flush_ranks_omaha, ranks_by_suit_count};
+use super::flush_ranks_omaha;
 use crate::{Card64, HandRating, Rank16};
 
 /// Returns the Omaha rating of `player` against `board`.
@@ -35,8 +35,8 @@ pub const fn eval_omaha5(player: Card64, board: Card64) -> HandRating {
 /// Returns the Omaha rating of `player` against `board`, ignoring flushes.
 #[inline]
 pub const fn eval_omaha_noflush(player: Card64, board: Card64) -> HandRating {
-    let [p1, p2, _, _] = ranks_by_suit_count(player);
-    let [b1, b2, b3, _] = ranks_by_suit_count(board);
+    let [p1, p2, _, _] = player.ranks_by_suit_count();
+    let [b1, b2, b3, _] = board.ranks_by_suit_count();
 
     if let Some(ranking) = eval_quads(p2, p1, b3, b2, b1) {
         return ranking;

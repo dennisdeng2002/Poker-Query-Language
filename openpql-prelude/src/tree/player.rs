@@ -1,8 +1,5 @@
 pub use crate::PlayerIdx;
 
-/// Number of players at the table.
-pub type PlayerCount = u8;
-
 /// Game-tree node actor: chance, a seated player, or terminal.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(

@@ -114,7 +114,7 @@ mod tests {
     use super::*;
     use crate::*;
 
-    impl Arbitrary for RankVar {
+    impl quickcheck::Arbitrary for RankVar {
         fn arbitrary(g: &mut quickcheck::Gen) -> Self {
             *g.choose(&[
                 Self::RB,

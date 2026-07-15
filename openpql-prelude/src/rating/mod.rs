@@ -1,12 +1,20 @@
+mod colex_three_ranks;
+mod colex_two_ranks;
 mod flop_hand_category;
 mod hand_rating;
 mod hand_rating_view;
 mod hand_type;
 
+use colex_three_ranks::ColexThreeRanks;
+use colex_two_ranks::ColexTwoRanks;
 pub use flop_hand_category::*;
 pub use hand_rating::HandRating;
 pub use hand_rating_view::*;
 pub use hand_type::HandType;
+
+pub type ColexTwoRanksIdx = u8;
+pub type ColexThreeRanksIdx = u16;
+type RankPosition = u8;
 
 #[cfg(test)]
 pub mod tests {

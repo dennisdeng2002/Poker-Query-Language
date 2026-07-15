@@ -1,7 +1,5 @@
 // TODO refactor this file
 
-use smallvec::smallvec;
-
 use crate::{HandRating, PerPlayer};
 
 type PlayerCount = u8;
@@ -19,7 +17,7 @@ pub fn calculate_payoffs(
 ) -> PerPlayer<Utility> {
     let mut remain = PerPlayer::from_slice(pot);
     let n = remain.len();
-    let mut payoffs: PerPlayer<Utility> = smallvec![0.0; n];
+    let mut payoffs: PerPlayer<Utility> = PerPlayer::from_elem(0.0, n);
 
     while remain.iter().any(|&chips| chips > 0) {
         let eligible: PerPlayer<usize> = remain

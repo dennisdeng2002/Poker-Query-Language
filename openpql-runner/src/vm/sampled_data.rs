@@ -98,7 +98,7 @@ impl VmSampledData {
         board_range: &PQLBoardRange,
     ) -> Option<()> {
         let i = PQLFnContext::idx_board_start(self.n_players, self.n_holecards);
-        let board = &mut self.cards[i..i + PQLBoard::N_RIVER];
+        let board = &mut self.cards[i..i + PQLBoard::N_RIVER as usize];
 
         gen_cards(rng, &mut self.card_gen, board, &board_range.0)?;
 

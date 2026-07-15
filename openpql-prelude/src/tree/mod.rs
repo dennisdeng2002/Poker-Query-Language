@@ -1,6 +1,3 @@
-/// Chip amount.
-pub type Chip = u16;
-
 mod action;
 mod annotated_action;
 mod annotated_action_kind;
@@ -20,8 +17,11 @@ pub use player::*;
 #[cfg(test)]
 pub use tests::*;
 
+/// Chip amount.
+pub type Chip = u16;
+
 fn to_pid(i: usize) -> PlayerIdx {
-    PlayerCount::try_from(i).unwrap()
+    PlayerIdx::try_from(i).unwrap()
 }
 
 #[cfg(test)]

@@ -74,9 +74,20 @@ check:
 build:
     cargo build --all-features
 
-# Run tests via nextest (e.g. `just test my_test`)
+# Run tests via nextest. `-r`/`--release` uses the fast release-test profile
+# (e.g. `just test my_test`, `just test -r --run-ignored all`)
 test *args:
-    {{ nightly }} nextest run {{ args }}
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cargo_profile=()
+    passthrough=()
+    for arg in {{ args }}; do
+        case "$arg" in
+            -r|--release) cargo_profile=(--cargo-profile release-test) ;;
+            *) passthrough+=("$arg") ;;
+        esac
+    done
+    {{ nightly }} nextest run ${cargo_profile[@]+"${cargo_profile[@]}"} ${passthrough[@]+"${passthrough[@]}"}
 
 # Run Clippy lints
 lint:
@@ -99,34 +110,29 @@ coverage:
     set -euo pipefail
 
     cov()   { {{ nightly }} llvm-cov "$@"; }
-    dbg_lcov="{{ lcov_dir }}/lcov.debug.raw"
-    rel_lcov="{{ lcov_dir }}/lcov.release.raw"
+    raw_lcov="{{ lcov_dir }}/lcov.raw"
     out_lcov="{{ lcov_dir }}/lcov"
 
     mkdir -p {{ lcov_dir }}/
 
-    echo "🧪 Running Rust tests with instrumentation (debug)..."
-    cov nextest --no-report
-    cov --examples --no-report
-    cov report --lcov --output-path "$dbg_lcov"
+    echo "🧪 Running all tests (incl. ignored) with instrumentation (release-test)..."
+    cov nextest --cargo-profile release-test --run-ignored all --no-report
+    cov --profile release-test --examples --no-report
+    cov report --profile release-test --lcov --output-path "$raw_lcov"
 
-    echo "🧪 Running ignored (slow) tests with instrumentation (release)..."
-    cov nextest --release --run-ignored ignored-only --no-report
-    cov report --release --lcov --output-path "$rel_lcov"
-
-    echo "📊 Merging coverage reports..."
+    echo "📊 Generating coverage report..."
     workspace_root=$(dirname "$(cargo locate-project --workspace --message-format plain)")
 
-    lcov -a "$dbg_lcov" -a "$rel_lcov" --filter region \
+    lcov -a "$raw_lcov" --filter region \
         --rc "c_file_extensions=c|h|cpp|cc|cxx|rs" \
         --ignore-errors inconsistent,corrupt,unsupported \
         --output-file "$out_lcov"
 
-    genhtml --filter region,branch_region --ignore-errors category \
+    genhtml --filter region --ignore-errors category \
         --rc "c_file_extensions=c|h|cpp|cc|cxx|rs" \
         --title "open-pql Coverage" \
         --prefix "$workspace_root" \
-        --legend --sort \
+        --legend --sort-tables \
         --output-directory {{ lcov_dir }}/ "$out_lcov"
 
     echo "✅ Coverage report: {{ lcov_dir }}/index.html"

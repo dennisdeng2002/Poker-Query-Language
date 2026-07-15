@@ -69,7 +69,7 @@ mod tests {
     use super::*;
     use crate::*;
 
-    impl Arbitrary for RangeCard {
+    impl quickcheck::Arbitrary for RangeCard {
         fn arbitrary(g: &mut quickcheck::Gen) -> Self {
             match *g.choose(&[0, 1, 2, 3, 4, 5, 6, 7, 8]).unwrap() {
                 0 => Self::CC(RankConst::arbitrary(g), SuitConst::arbitrary(g)),

@@ -32,7 +32,9 @@ macro_rules! cards {
 
 /// Playing card with a rank and suit.
 #[cfg_attr(feature = "speedy", derive(speedy::Readable, speedy::Writable))] // LCOV_EXCL_LINE
-#[derive(Clone, Copy, Debug, derive_more::Display, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(
+    Clone, Copy, Debug, derive_more::Display, Hash, PartialEq, Eq, PartialOrd, Ord, Default,
+)]
 #[display("{rank}{suit}")]
 pub struct Card {
     /// Card rank.
@@ -42,6 +44,7 @@ pub struct Card {
 }
 
 impl Card {
+    pub(crate) const DEFAULT: Self = Self::new(Rank::R2, Suit::S);
     /// Card count in a standard deck.
     pub const N_CARDS: CardCount = Suit::N_SUITS * Rank::N_RANKS;
     /// Card count in a short deck.
@@ -186,11 +189,20 @@ impl Card {
             self.rank.const_lt(other.rank)
         }
     }
-}
 
-impl Default for Card {
-    fn default() -> Self {
-        Self::new(Rank::R2, Suit::S)
+    #[inline]
+    pub(crate) const fn const_sort<const N: usize>(arr: &mut [Self; N]) {
+        let mut i = 1;
+        while i < N {
+            let mut j = i;
+            while j > 0 && arr[j].const_lt(arr[j - 1]) {
+                let tmp = arr[j - 1];
+                arr[j - 1] = arr[j];
+                arr[j] = tmp;
+                j -= 1;
+            }
+            i += 1;
+        }
     }
 }
 
@@ -244,7 +256,7 @@ impl<'de> Deserialize<'de> for Card {
             type Value = Card;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("card index interger or card string")
+                formatter.write_str("card index integer or card string")
             }
 
             fn visit_i8<E>(self, value: i8) -> Result<Self::Value, E>
@@ -375,7 +387,7 @@ mod tests_serde {
     fn test_card_unexpected_type() {
         assert_de_tokens_error::<Compact<Card>>(
             &[Token::Bool(true)],
-            "invalid type: boolean `true`, expected card index interger or card string",
+            "invalid type: boolean `true`, expected card index integer or card string",
         );
     }
 }

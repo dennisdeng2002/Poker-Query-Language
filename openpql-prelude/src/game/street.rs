@@ -33,14 +33,11 @@ impl Street {
     }
 
     pub(crate) const fn from_board(board: Board) -> Self {
-        if board.flop.is_none() {
-            Self::Preflop
-        } else if board.turn.is_none() {
-            Self::Flop
-        } else if board.river.is_none() {
-            Self::Turn
-        } else {
-            Self::River
+        match board {
+            Board::Preflop => Self::Preflop,
+            Board::Flop(_) => Self::Flop,
+            Board::Turn(_, _) => Self::Turn,
+            Board::River(_, _, _) => Self::River,
         }
     }
 }

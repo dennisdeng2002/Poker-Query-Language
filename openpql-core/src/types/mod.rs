@@ -35,7 +35,7 @@ pub use pql_handtype::*;
 pub use pql_hi_rating::*;
 pub use pql_lo_rating::*;
 
-// Primatives Types
+// Primitives Types
 mod pql_card_count;
 mod pql_double;
 mod pql_equity;

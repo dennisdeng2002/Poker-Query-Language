@@ -18,7 +18,7 @@ pub fn fractional_river_equity(
     hero_idx: PQLPlayerCount,
 ) -> PQLFraction {
     debug_assert!(
-        board.len() == PQLBoard::N_RIVER,
+        board.len() == PQLBoard::N_RIVER as usize,
         "board must have {} cards, got {}",
         PQLBoard::N_RIVER,
         board.len(),

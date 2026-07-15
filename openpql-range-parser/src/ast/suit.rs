@@ -53,7 +53,7 @@ pub mod tests {
     use super::*;
     use crate::*;
 
-    impl Arbitrary for SuitVar {
+    impl quickcheck::Arbitrary for SuitVar {
         fn arbitrary(g: &mut quickcheck::Gen) -> Self {
             *g.choose(&[Self::W, Self::X, Self::Y, Self::Z]).unwrap()
         }

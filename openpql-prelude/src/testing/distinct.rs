@@ -1,13 +1,15 @@
 use std::{any, hash::Hash};
 
-use quickcheck::{Arbitrary, Gen};
+use quickcheck::Gen;
 use rustc_hash::FxHashSet;
 
 /// Collection of `N` pairwise-distinct values.
 #[derive(Clone, Debug, derive_more::Index, derive_more::IntoIterator, derive_more::Deref)]
 pub struct Distinct<const N: usize, T>(pub Vec<T>);
 
-impl<const N: usize, T: Arbitrary + Eq + Hash + Clone> Arbitrary for Distinct<N, T> {
+impl<const N: usize, T: quickcheck::Arbitrary + Eq + Hash + Clone> quickcheck::Arbitrary
+    for Distinct<N, T>
+{
     #[cfg_attr(coverage_nightly, coverage(off))]
     fn arbitrary(g: &mut Gen) -> Self {
         let mut set = FxHashSet::default();

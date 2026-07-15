@@ -38,7 +38,7 @@ impl PQLFnContext<'_> {
     }
 
     pub const fn n_total_cards(n_players: PQLPlayerCount, n_holecards: PQLCardCount) -> usize {
-        Self::idx_board_start(n_players, n_holecards) + PQLBoard::N_RIVER
+        Self::idx_board_start(n_players, n_holecards) + PQLBoard::N_RIVER as usize
     }
 
     pub fn get_player_slice(&self, player: PQLPlayer) -> &[PQLCard] {
@@ -138,7 +138,8 @@ pub mod tests {
         }
 
         pub fn from_cards(game: PQLGame, cards: Vec<PQLCard>) -> Self {
-            let n_players = PQLCardCount::try_from(cards.len() - PQLBoard::N_RIVER).unwrap()
+            let n_players = PQLCardCount::try_from(cards.len() - PQLBoard::N_RIVER as usize)
+                .unwrap()
                 / game.player_cards_len();
 
             Self {
@@ -150,7 +151,7 @@ pub mod tests {
         }
     }
 
-    impl Arbitrary for TestPQLFnContext {
+    impl quickcheck::Arbitrary for TestPQLFnContext {
         fn arbitrary(g: &mut quickcheck::Gen) -> Self {
             const MAX_PLAYER: PQLPlayerCount = 10;
             fn random_cards<const SD: bool>(rng: &mut impl rand::Rng, n: usize) -> Vec<PQLCard> {
@@ -167,7 +168,8 @@ pub mod tests {
             let rng = &mut rand::rng();
             let n_players = rng.random_range(1..=MAX_PLAYER);
 
-            let n_cards = (game.player_cards_len() * n_players) as usize + PQLBoard::N_RIVER;
+            let n_cards =
+                (game.player_cards_len() * n_players) as usize + PQLBoard::N_RIVER as usize;
 
             let sampled_cards = match game {
                 PQLGame::ShortDeck => random_cards::<true>(rng, n_cards),

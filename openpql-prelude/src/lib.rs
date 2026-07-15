@@ -8,26 +8,37 @@ mod card;
 mod error;
 mod eval;
 mod game;
+mod isomorphism;
+mod iterator;
 mod rating;
 #[cfg(feature = "rand")]
 mod rng;
+mod stack_vec;
+mod starting_hands;
 /// Game-tree types: actions, history, and tree-building helpers.
 pub mod tree;
+mod waugh_indexer;
 
 pub use card::{
-    Board, Card, Card64, CardCount, CardIdx, CardIter, Flop, FlushingSuit, Hand, HandIter,
-    HandMatrix, HandN, Idx, IsomorphicBoard, IsomorphicCard, IsomorphicHand, IsomorphicHandN,
-    MAX_HOLECARDS, Rank, Rank16, RankIdx, Suit, Suit4, SuitIdx, SuitMap,
+    Board, Card, Card64, CardCount, CardIdx, Flop, Hand, HandN, Idx, MAX_HOLECARDS, Rank, Rank16,
+    RankIdx, Suit, Suit4, SuitIdx,
 };
 pub use error::ParseError;
 pub use eval::{
     calculate_payoffs,
     rating::{eval_holdem, eval_omaha, eval_omaha5, eval_shortdeck},
 };
-pub use game::{Game, MAX_PLAYERS, PerPlayer, Player, PlayerIdx, Street};
+pub use game::{Game, HoleCardRule, MAX_PLAYERS, PerPlayer, Player, PlayerIdx, Street};
+pub use isomorphism::{
+    FlushingSuit, HandMatrix, IsomorphicBoardGto, IsomorphicCard, IsomorphicHand, IsomorphicHandN,
+    SuitMap,
+};
+pub use iterator::{CardIter, HandIter, RankIter};
 pub use rating::{FlopHandCategory, HandRating, HandType};
 #[cfg(feature = "rand")]
 pub use rng::CardGen;
+use stack_vec::StackVec;
+pub use waugh_indexer::WaughIndexer;
 
 type RatingInner = u16;
 const N_STRAIGHT: usize = 10;
