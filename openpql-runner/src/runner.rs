@@ -5,6 +5,17 @@ use super::*;
 
 pub struct PQLRunner {}
 
+/// Once failed samples/rejections outnumber `n_trails` by this factor (with
+/// a minimum floor), we give up: a genuinely unsatisfiable range/board/WHERE
+/// combination fails on effectively every attempt, so it hits this ceiling
+/// almost immediately regardless of how high it is set. A merely *rare* but
+/// satisfiable combination (e.g. a pocket pair colliding with a same-rank
+/// card fixed on the board) can have a success probability well under 50%,
+/// so comparing `n_fail` directly to `n_trails` bails out on those long
+/// before enough successes could realistically accumulate.
+const MAX_FAIL_RATIO: usize = 1000;
+const MIN_FAIL_CEILING: usize = 100_000;
+
 /// Runs `n_trails` successful trials on its own clone of the [`Vm`]
 /// (sharing `cache` with the other clones).
 fn run_trials(
@@ -16,10 +27,10 @@ fn run_trials(
 ) -> PQLResult<RunnerOutput> {
     let mut rng = rand::rng();
     let mut output = RunnerOutput::new(vm.static_data.game, selectors);
+    let max_fails = n_trails.saturating_mul(MAX_FAIL_RATIO).max(MIN_FAIL_CEILING);
 
     while output.n_succ < n_trails {
-        if output.n_fail == n_trails {
-            // TODO: fix this
+        if output.n_fail >= max_fails {
             return Err(((0, 1), VmError::SamplingFailed).into());
         }
 
