@@ -94,7 +94,18 @@ impl FlushTextureFlop {
                     (true, true, false) => SuitMap::map2(s0, s1),
                     (true, false, true) => SuitMap::map2(s0, s2),
                     (false, true, true) => SuitMap::map2(s1, s2),
-                    (true, true, true) => unimplemented!(), // LCOV_EXCL_LINE; omaha6
+                    (true, true, true) => {
+                        // All three live suits need >=2 hole cards each, so
+                        // reaching this arm requires exactly 6 hole cards (2
+                        // per suit). Tie-breaking on the player's cards (not
+                        // just the flop) keeps the result suit-relabeling
+                        // invariant even when the flop's three cards tie in
+                        // rank (e.g. a rainbow trips board), where the flop
+                        // alone carries no information to break the tie.
+                        let hole: [Card; 6] =
+                            [player[0], player[1], player[2], player[3], player[4], player[5]];
+                        util::triple_flush_map(s0, s1, s2, hole)
+                    }
                 };
 
                 util::mapped_pair(map, &flop, player)
@@ -169,6 +180,32 @@ mod tests {
         assert_pair(("AhKsQd", "JhTh9s8s"), ("QnKxAy", "8x9xTyJy"));
         assert_pair(("AhKdQs", "JhTh9s8s"), ("QxKnAy", "8x9xTyJy"));
         assert_pair(("AdKsQh", "JhTh9s8s"), ("QxKyAn", "8y9yTxJx"));
+    }
+
+    #[test]
+    fn rainbow_omaha6_three_suits_live() {
+        assert_pair(("AhKsQd", "JhTh9s8s7d6d"), ("QxKyAz", "6x7x8y9yTzJz"));
+    }
+
+    #[test]
+    fn rainbow_omaha6_three_suits_live_is_globally_suit_symmetric() {
+        let (board0, player0) = pair("AhKsQd", "JhTh9s8s7d6d");
+        let (board1, player1) = pair("AsKhQd", "JsTs9h8h7d6d");
+
+        assert_eq!(board0, board1);
+        assert_eq!(player0, player1);
+    }
+
+    #[test]
+    fn rainbow_omaha6_paired_board_three_suits_live_is_globally_suit_symmetric() {
+        // Regression case: a rainbow board with a rank tie among its three
+        // cards (here, trip aces) previously broke suit-isomorphism because
+        // the tie-break depended on raw suit identity rather than relabeling.
+        let (board0, player0) = pair("AhAsAd", "2h3h4s5s6d7d");
+        let (board1, player1) = pair("AhAcAd", "2h3h4c5c6d7d");
+
+        assert_eq!(board0, board1);
+        assert_eq!(player0, player1);
     }
 
     #[test]

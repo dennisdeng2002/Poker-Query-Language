@@ -32,6 +32,21 @@ pub const fn eval_omaha5(player: Card64, board: Card64) -> HandRating {
     eval_omaha(player, board)
 }
 
+/// Returns the Omaha-6 (6 hole cards, a.k.a. PLO6) rating of `player` against
+/// `board`.
+///
+/// The Omaha case analysis depends only on the player's rank and suit sets
+/// and always uses exactly 2 hole cards plus 3 board cards, so it is
+/// independent of the number of hole cards dealt; this delegates to
+/// [`eval_omaha`].
+///
+/// # Panics
+/// Panics on an invalid hand.
+#[inline]
+pub const fn eval_omaha6(player: Card64, board: Card64) -> HandRating {
+    eval_omaha(player, board)
+}
+
 /// Returns the Omaha rating of `player` against `board`, ignoring flushes.
 #[inline]
 pub const fn eval_omaha_noflush(player: Card64, board: Card64) -> HandRating {
@@ -583,5 +598,68 @@ mod tests {
         }
 
         assert_eq!(max5, res10, "{hand:?} {board:?} {max5} != {res10}");
+    }
+
+    fn assert_ranking6(p: &str, b: &str, ht: HandType, hi: &str, lo: &str) {
+        let l = eval_omaha6(c64!(p), c64!(b));
+        let r = mk_rating(ht, hi, lo);
+        assert_eq!(l, r, "{p} {b} {l:?} != {r:?}");
+    }
+
+    #[test]
+    fn test_omaha6() {
+        let data = [
+            (
+                "As Ks 2h 3d 9c 4c",
+                "Qs Js Ts 4h 5d",
+                StraightFlush,
+                "A",
+                "",
+            ),
+            ("Ah Ad 7s 8h 2c 4c", "Ac As Kd Qh 2d", Quads, "A", "K"),
+            ("Ks Kh 2s 3h 7c 4c", "Kd As Ah 9c 9d", FullHouse, "K", "A"),
+            ("Ah 2h Kd Qc 9s 4c", "Th 7h 3h Ks Qd", Flush, "AT732", ""),
+            ("9c 8d Ah Ad 2c 4h", "7s 6h 5d Ks Kd", Straight, "9", ""),
+            ("Ac Kd 2h 3s 4c 6c", "As Ah 9c 8d 7h", Trips, "A", "K9"),
+            ("Ks Qs 2h 3d 7c 4c", "Kh Qd 9s 8c 4h", TwoPair, "KQ", "9"),
+            ("As Kd 2h 3c 4s Qc", "Ah 9c 8d 7s 5h", Pair, "A", "K98"),
+            ("Ah Qs 8c 5h 4d 3c", "Kd Jc 9h 6s 2d", HighCard, "AKQJ9", ""),
+        ];
+
+        for (p, b, ht, hi, lo) in data {
+            assert_ranking6(p, b, ht, hi, lo);
+        }
+    }
+
+    #[quickcheck]
+    fn test_omaha6_11cards(cards: CardN<11>) {
+        let (hand, board): (CardN<6>, CardN<5>) = cards.into();
+
+        let res11 = eval_omaha6(
+            Card64::from(hand.as_slice()),
+            Card64::from(board.as_slice()),
+        );
+
+        let mut max5 = HandRating::default();
+
+        for h in hand.as_slice().iter().combinations(2) {
+            for b in board.clone().into_iter().combinations(3) {
+                let mut cs = Card64::default();
+
+                cs.set(*h[0]);
+                cs.set(*h[1]);
+                cs.set(b[0]);
+                cs.set(b[1]);
+                cs.set(b[2]);
+
+                let res = eval_holdem(cs);
+
+                if res > max5 {
+                    max5 = res;
+                }
+            }
+        }
+
+        assert_eq!(max5, res11, "{hand:?} {board:?} {max5} != {res11}");
     }
 }

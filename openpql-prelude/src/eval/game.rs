@@ -2,7 +2,7 @@ use crate::{
     Board, Card64, FlopHandCategory, Game, HandRating,
     eval::{
         flop::{eval_flop_holdem, eval_flop_omaha},
-        rating::{eval_holdem, eval_omaha, eval_omaha5, eval_shortdeck},
+        rating::{eval_holdem, eval_omaha, eval_omaha5, eval_omaha6, eval_shortdeck},
     },
 };
 
@@ -15,6 +15,7 @@ impl Game {
             Self::ShortDeck => eval_shortdeck(player | board),
             Self::Omaha => eval_omaha(player, board),
             Self::Omaha5 => eval_omaha5(player, board),
+            Self::Omaha6 => eval_omaha6(player, board),
         }
     }
 
@@ -23,7 +24,7 @@ impl Game {
     pub fn eval_flop_category(self, player: Card64, board: Board) -> FlopHandCategory {
         match self {
             Self::Holdem | Self::ShortDeck => eval_flop_holdem(player, board),
-            Self::Omaha | Self::Omaha5 => eval_flop_omaha(player, board),
+            Self::Omaha | Self::Omaha5 | Self::Omaha6 => eval_flop_omaha(player, board),
         }
     }
 }
@@ -59,6 +60,10 @@ mod tests {
             mk_rating(HandType::Trips, "7", "KQ")
         );
         assert_eq!(
+            Game::Omaha6.eval_rating(c64!("Ks Qh 8s 9h 2c 3d"), c64!("7h 7c 7d As Ah")),
+            mk_rating(HandType::Trips, "7", "KQ")
+        );
+        assert_eq!(
             Game::ShortDeck.eval_rating(c64!("Kh As Ah Ac Ad 6d 6c"), Card64::default()),
             mk_rating(HandType::Quads, "A", "K")
         );
@@ -73,6 +78,11 @@ mod tests {
 
         assert_eq!(
             Game::Omaha.eval_flop_category(c64!("7c 8c 2s 3s"), board!("7s 8h Tc")),
+            FlopHandCategory::BottomTwo,
+        );
+
+        assert_eq!(
+            Game::Omaha6.eval_flop_category(c64!("7c 8c 2s 3s 4d 5d"), board!("7s 8h Tc")),
             FlopHandCategory::BottomTwo,
         );
     }

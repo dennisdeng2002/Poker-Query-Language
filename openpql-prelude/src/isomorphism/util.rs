@@ -49,19 +49,62 @@ const fn iso_lt<const N: usize>(lhs: [IsomorphicCard; N], rhs: [IsomorphicCard; 
     true
 }
 
+/// Picks whichever of `candidates` relabels `cards` into the lexicographically
+/// smallest form, making the result invariant to the input order of the
+/// flush-relevant suits.
+#[inline]
+const fn best_map<const K: usize, const N: usize>(
+    candidates: [SuitMap; K],
+    cards: [Card; N],
+) -> SuitMap {
+    let mut best = relabel_sorted(candidates[0], cards);
+    let mut best_map = candidates[0];
+    let mut i = 1;
+
+    while i < K {
+        let cur = relabel_sorted(candidates[i], cards);
+        if iso_lt(cur, best) {
+            best = cur;
+            best_map = candidates[i];
+        }
+        i += 1;
+    }
+
+    best_map
+}
+
 /// Picks the [`SuitMap`] that relabels two flush suits into canonical order.
 ///
 /// Both `map2` orderings are tried and the one yielding the lexicographically
 /// smaller form wins, making the result invariant to which suit is labeled first.
 #[inline]
 pub const fn double_flush_map<const N: usize>(s0: Suit, s1: Suit, cards: [Card; N]) -> SuitMap {
-    let (map0, map1) = (SuitMap::map2(s0, s1), SuitMap::map2(s1, s0));
+    best_map([SuitMap::map2(s0, s1), SuitMap::map2(s1, s0)], cards)
+}
 
-    if iso_lt(relabel_sorted(map0, cards), relabel_sorted(map1, cards)) {
-        map0
-    } else {
-        map1
-    }
+/// Picks the [`SuitMap`] that relabels three flush suits into canonical order.
+///
+/// All `3! = 6` orderings of `map3` are tried and the one yielding the
+/// lexicographically smallest form wins, making the result invariant to
+/// which suit is labeled first, second, or third.
+#[inline]
+pub const fn triple_flush_map<const N: usize>(
+    s0: Suit,
+    s1: Suit,
+    s2: Suit,
+    cards: [Card; N],
+) -> SuitMap {
+    best_map(
+        [
+            SuitMap::map3(s0, s1, s2),
+            SuitMap::map3(s0, s2, s1),
+            SuitMap::map3(s1, s0, s2),
+            SuitMap::map3(s1, s2, s0),
+            SuitMap::map3(s2, s0, s1),
+            SuitMap::map3(s2, s1, s0),
+        ],
+        cards,
+    )
 }
 
 /// Number of `cards` whose suit is `suit`.
@@ -125,5 +168,24 @@ mod tests {
 
         assert_eq!(n_flush_suits(&[z]), 1);
         assert_eq!(place_card(z, 0), (Card::new(Rank::RA, Suit::D), 0));
+    }
+
+    #[test]
+    fn test_triple_flush_map_is_suit_order_invariant() {
+        let cards = cards!("2s3s4h5h6d7d");
+        let arr: [Card; 6] = cards.try_into().unwrap();
+
+        let base = relabel_sorted(triple_flush_map(Suit::S, Suit::H, Suit::D, arr), arr);
+
+        for (s0, s1, s2) in [
+            (Suit::S, Suit::D, Suit::H),
+            (Suit::H, Suit::S, Suit::D),
+            (Suit::H, Suit::D, Suit::S),
+            (Suit::D, Suit::S, Suit::H),
+            (Suit::D, Suit::H, Suit::S),
+        ] {
+            let map = triple_flush_map(s0, s1, s2, arr);
+            assert_eq!(relabel_sorted(map, arr), base);
+        }
     }
 }

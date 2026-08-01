@@ -86,6 +86,10 @@ impl PQLFnContext<'_> {
                 .map(PQLCardSet::from)
                 .collect(),
 
+            PQLGame::Omaha6 => HandN::<6>::iter_all::<false>()
+                .map(PQLCardSet::from)
+                .collect(),
+
             PQLGame::ShortDeck => HandN::<2>::iter_all::<true>()
                 .map(PQLCardSet::from)
                 .collect(),

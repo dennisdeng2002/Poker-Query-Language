@@ -41,4 +41,4 @@ pub type CardCount = u8;
 pub type Idx = i8;
 
 /// Maximum number of hole cards stored inline.
-pub const MAX_HOLECARDS: usize = 5;
+pub const MAX_HOLECARDS: usize = 6;

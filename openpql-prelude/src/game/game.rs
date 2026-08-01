@@ -15,6 +15,8 @@ pub enum Game {
     Omaha,
     /// 5-Card Omaha (Big O / PLO5).
     Omaha5,
+    /// 6-Card Omaha (PLO6).
+    Omaha6,
     /// Short Deck (6+) Hold'em.
     ShortDeck,
 }
@@ -28,6 +30,8 @@ impl Game {
     pub const OMAHA_CARDS: CardCount = 4;
     /// Number of hole cards in 5-Card Omaha.
     pub const OMAHA5_CARDS: CardCount = 5;
+    /// Number of hole cards in 6-Card Omaha.
+    pub const OMAHA6_CARDS: CardCount = 6;
 
     /// Returns the number of hole cards dealt to each player.
     #[must_use]
@@ -37,6 +41,7 @@ impl Game {
             Self::ShortDeck => Self::SHORTDECK_CARDS,
             Self::Omaha => Self::OMAHA_CARDS,
             Self::Omaha5 => Self::OMAHA5_CARDS,
+            Self::Omaha6 => Self::OMAHA6_CARDS,
         }
     }
 
@@ -49,7 +54,7 @@ impl Game {
     pub const fn to_hole_card_rule(self) -> HoleCardRule {
         match self {
             Self::Holdem | Self::ShortDeck => HoleCardRule::UseAny,
-            Self::Omaha | Self::Omaha5 => HoleCardRule::UseExactlyTwo,
+            Self::Omaha | Self::Omaha5 | Self::Omaha6 => HoleCardRule::UseExactlyTwo,
         }
     }
 }
@@ -62,6 +67,7 @@ impl FromStr for Game {
             "holdem" => Ok(Self::Holdem),
             "omaha" => Ok(Self::Omaha),
             "omaha5" => Ok(Self::Omaha5),
+            "omaha6" => Ok(Self::Omaha6),
             "shortdeck" => Ok(Self::ShortDeck),
             _ => Err(ParseError::InvalidGame(s.into())),
         }
@@ -75,12 +81,18 @@ impl quickcheck::Arbitrary for Game {
         #[allow(unused)]
         const fn completeness_check(e: Game) {
             match e {
-                Game::Holdem | Game::Omaha | Game::Omaha5 | Game::ShortDeck => (),
+                Game::Holdem | Game::Omaha | Game::Omaha5 | Game::Omaha6 | Game::ShortDeck => (),
             }
         }
 
-        *g.choose(&[Self::Holdem, Self::Omaha, Self::Omaha5, Self::ShortDeck])
-            .unwrap()
+        *g.choose(&[
+            Self::Holdem,
+            Self::Omaha,
+            Self::Omaha5,
+            Self::Omaha6,
+            Self::ShortDeck,
+        ])
+        .unwrap()
     }
 }
 
@@ -95,6 +107,7 @@ mod tests {
         assert_eq!(2, Game::Holdem.player_cards_len());
         assert_eq!(4, Game::Omaha.player_cards_len());
         assert_eq!(5, Game::Omaha5.player_cards_len());
+        assert_eq!(6, Game::Omaha6.player_cards_len());
         assert_eq!(2, Game::ShortDeck.player_cards_len());
     }
 
@@ -103,6 +116,7 @@ mod tests {
         assert!(!Game::Holdem.is_shortdeck());
         assert!(!Game::Omaha.is_shortdeck());
         assert!(!Game::Omaha5.is_shortdeck());
+        assert!(!Game::Omaha6.is_shortdeck());
         assert!(Game::ShortDeck.is_shortdeck());
     }
 
@@ -112,6 +126,7 @@ mod tests {
 
         assert_eq!(Ok(Game::Omaha), "omaha".parse());
         assert_eq!(Ok(Game::Omaha5), "omaha5".parse());
+        assert_eq!(Ok(Game::Omaha6), "omaha6".parse());
         assert_eq!(Ok(Game::ShortDeck), "shortdeck".parse());
 
         assert_eq!(
@@ -157,6 +172,14 @@ mod tests_serde {
             &[Token::UnitVariant {
                 name: "Game",
                 variant: "Omaha5",
+            }],
+        );
+
+        assert_tokens(
+            &Game::Omaha6,
+            &[Token::UnitVariant {
+                name: "Game",
+                variant: "Omaha6",
             }],
         );
     }
