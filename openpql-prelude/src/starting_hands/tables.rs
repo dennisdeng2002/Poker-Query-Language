@@ -6,7 +6,10 @@ use rustc_hash::FxHashSet;
 
 use crate::{
     Card, Game, HandN, IsomorphicCard, IsomorphicHandN,
-    isomorphism::{isomorphic_preflop_holdem, isomorphic_preflop_omaha, isomorphic_preflop_omaha5},
+    isomorphism::{
+        isomorphic_preflop_holdem, isomorphic_preflop_omaha, isomorphic_preflop_omaha5,
+        isomorphic_preflop_omaha6,
+    },
 };
 
 type StaticHands = LazyLock<Vec<Vec<Card>>>;
@@ -34,6 +37,8 @@ pub static ALL_HANDS_OMAHA: StaticHands =
     LazyLock::new(collect_hands::<false, { Game::OMAHA_CARDS as usize }>);
 pub static ALL_HANDS_OMAHA5: StaticHands =
     LazyLock::new(collect_hands::<false, { Game::OMAHA5_CARDS as usize }>);
+pub static ALL_HANDS_OMAHA6: StaticHands =
+    LazyLock::new(collect_hands::<false, { Game::OMAHA6_CARDS as usize }>);
 
 fn iso_hands<const N: usize>(
     hands: &[Vec<Card>],
@@ -65,4 +70,8 @@ pub static ALL_HANDS_OMAHA_ISO: StaticIsoHands = LazyLock::new(|| {
 
 pub static ALL_HANDS_OMAHA5_ISO: StaticIsoHands = LazyLock::new(|| {
     iso_hands::<{ Game::OMAHA5_CARDS as usize }>(&ALL_HANDS_OMAHA5, isomorphic_preflop_omaha5)
+});
+
+pub static ALL_HANDS_OMAHA6_ISO: StaticIsoHands = LazyLock::new(|| {
+    iso_hands::<{ Game::OMAHA6_CARDS as usize }>(&ALL_HANDS_OMAHA6, isomorphic_preflop_omaha6)
 });

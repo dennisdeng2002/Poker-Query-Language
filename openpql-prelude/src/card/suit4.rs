@@ -107,6 +107,14 @@ impl Suit4 {
         let rem = self.0 & self.0.wrapping_sub(1);
         SuitIdx(rem.trailing_zeros() as Idx).to_suit()
     }
+
+    #[inline]
+    #[expect(clippy::cast_possible_truncation, reason = "N_SUITS == 4")]
+    pub const fn third_suit(self) -> Option<Suit> {
+        let rem = self.0 & self.0.wrapping_sub(1);
+        let rem2 = rem & rem.wrapping_sub(1);
+        SuitIdx(rem2.trailing_zeros() as Idx).to_suit()
+    }
 }
 
 impl fmt::Display for Suit4 {
@@ -305,7 +313,7 @@ mod tests {
     }
 
     #[quickcheck]
-    fn test_1st_and_2nd_suit(s4: Suit4) {
+    fn test_1st_2nd_3rd_suit(s4: Suit4) {
         let suits: Vec<_> = Suit::ARR_ALL
             .iter()
             .copied()
@@ -314,5 +322,6 @@ mod tests {
 
         assert_eq!(suits.first().copied(), s4.first_suit());
         assert_eq!(suits.get(1).copied(), s4.second_suit());
+        assert_eq!(suits.get(2).copied(), s4.third_suit());
     }
 }

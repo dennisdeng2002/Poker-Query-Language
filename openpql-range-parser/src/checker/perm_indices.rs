@@ -32,6 +32,18 @@ pub static PERM54: LazyLock<IdxPermutations> =
     LazyLock::new(|| (0..5).permutations(4).collect_vec());
 pub static PERM55: LazyLock<IdxPermutations> =
     LazyLock::new(|| (0..5).permutations(5).collect_vec());
+pub static PERM61: LazyLock<IdxPermutations> =
+    LazyLock::new(|| (0..6).permutations(1).collect_vec());
+pub static PERM62: LazyLock<IdxPermutations> =
+    LazyLock::new(|| (0..6).permutations(2).collect_vec());
+pub static PERM63: LazyLock<IdxPermutations> =
+    LazyLock::new(|| (0..6).permutations(3).collect_vec());
+pub static PERM64: LazyLock<IdxPermutations> =
+    LazyLock::new(|| (0..6).permutations(4).collect_vec());
+pub static PERM65: LazyLock<IdxPermutations> =
+    LazyLock::new(|| (0..6).permutations(5).collect_vec());
+pub static PERM66: LazyLock<IdxPermutations> =
+    LazyLock::new(|| (0..6).permutations(6).collect_vec());
 
 pub static PERM_BOARD_4: LazyLock<IdxPermutations> = LazyLock::new(|| {
     vec![
@@ -78,6 +90,13 @@ pub fn range_cond_indices(n: usize, r: usize, board: bool) -> &'static IdxPermut
         (5, 4, false) => PERM54.as_ref(),
         (5, 5, false) => PERM55.as_ref(),
 
+        (6, 1, false) => PERM61.as_ref(),
+        (6, 2, false) => PERM62.as_ref(),
+        (6, 3, false) => PERM63.as_ref(),
+        (6, 4, false) => PERM64.as_ref(),
+        (6, 5, false) => PERM65.as_ref(),
+        (6, 6, false) => PERM66.as_ref(),
+
         (5, 4, true) => PERM_BOARD_4.as_ref(),
         (5, 5, true) => PERM_BOARD_5.as_ref(),
 
@@ -107,6 +126,12 @@ mod tests {
         assert_eq!(indices(5, 3, false).len(), 60);
         assert_eq!(indices(5, 4, false).len(), 120);
         assert_eq!(indices(5, 5, false).len(), 120);
+        assert_eq!(*indices(6, 1, false), [[0], [1], [2], [3], [4], [5]]);
+        assert_eq!(indices(6, 2, false).len(), 30);
+        assert_eq!(indices(6, 3, false).len(), 120);
+        assert_eq!(indices(6, 4, false).len(), 360);
+        assert_eq!(indices(6, 5, false).len(), 720);
+        assert_eq!(indices(6, 6, false).len(), 720);
     }
 
     #[test]
@@ -140,8 +165,8 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "not implemented: n=6; r=1; board: false")]
+    #[should_panic(expected = "not implemented: n=7; r=1; board: false")]
     fn test_unimpl() {
-        let _ = indices(6, 1, false);
+        let _ = indices(7, 1, false);
     }
 }

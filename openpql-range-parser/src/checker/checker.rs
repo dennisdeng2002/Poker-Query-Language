@@ -92,6 +92,15 @@ mod tests {
     }
 
     #[test]
+    fn test_rank_var_six_cards() {
+        assert_checker::<6, false>(
+            "AKQJT9",
+            &["Ah Ks Qd Jc Ts 9h"],
+            &["Ah Ks Qd Jc Ts 8h"],
+        );
+    }
+
+    #[test]
     fn test_suit_const() {
         assert_checker::<2, false>("sh", &["As", "Kh", "Ah Ks"], &["As 2s"]);
     }

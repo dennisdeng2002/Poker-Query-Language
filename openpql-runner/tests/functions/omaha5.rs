@@ -31,3 +31,15 @@ fn omaha5_hero_range_with_five_cards() {
          from game='omaha5', hero='AAKKQ', board='2c7d9s'",
     );
 }
+
+#[test]
+fn omaha5_pocket_pair_outside_first_four_cards_makes_set() {
+    // Rank-ascending hole-card order is 2s,3h,4d,Kd,Kc; a flop-category
+    // evaluator that only checks pairs among the first 4 cards can never
+    // see the (Kd,Kc) pocket pair, and would report a lesser category
+    // (e.g. no pair at all) instead of the correct set.
+    assert_count_all(
+        "select count(flophandcategory(hero) = FLOPSET) \
+         from game='omaha5', hero='2s3h4dKdKc', board='Kh9c2d'",
+    );
+}

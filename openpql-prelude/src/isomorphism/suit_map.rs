@@ -69,6 +69,18 @@ impl SuitMap {
                 IsomorphicCard::const_sort(&mut arr);
                 IsomorphicHand::from_arr(arr)
             }
+            6 => {
+                let mut arr = [
+                    self.iso_card(cards[0]),
+                    self.iso_card(cards[1]),
+                    self.iso_card(cards[2]),
+                    self.iso_card(cards[3]),
+                    self.iso_card(cards[4]),
+                    self.iso_card(cards[5]),
+                ];
+                IsomorphicCard::const_sort(&mut arr);
+                IsomorphicHand::from_arr(arr)
+            }
             _ => unimplemented!(), // LCOV_EXCL_LINE
         }
     }

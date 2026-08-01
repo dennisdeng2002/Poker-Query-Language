@@ -1,6 +1,6 @@
 use super::{
     IsomorphicCard, IsomorphicHandN, isomorphic_preflop_holdem, isomorphic_preflop_omaha,
-    isomorphic_preflop_omaha5,
+    isomorphic_preflop_omaha5, isomorphic_preflop_omaha6,
     util::{n_flush_suits, place_card},
 };
 use crate::{Card, card::CardArray};
@@ -37,6 +37,7 @@ impl IsomorphicHand {
             3 => Self::from_arr(IsomorphicHandN::<3>::no_flush(cards).0),
             4 => Self::from_arr(IsomorphicHandN::<4>::no_flush(cards).0),
             5 => Self::from_arr(IsomorphicHandN::<5>::no_flush(cards).0),
+            6 => Self::from_arr(IsomorphicHandN::<6>::no_flush(cards).0),
             _ => unimplemented!(), // LCOV_EXCL_LINE
         }
     }
@@ -47,6 +48,7 @@ impl IsomorphicHand {
             2 => Self::from_arr(isomorphic_preflop_holdem(cards).0),
             4 => Self::from_arr(isomorphic_preflop_omaha(cards).0),
             5 => Self::from_arr(isomorphic_preflop_omaha5(cards).0),
+            6 => Self::from_arr(isomorphic_preflop_omaha6(cards).0),
             _ => unimplemented!(), // LCOV_EXCL_LINE
         }
     }

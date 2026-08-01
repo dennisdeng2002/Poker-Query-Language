@@ -3,22 +3,25 @@ use std::cmp;
 use crate::{Board, Card64, FlopHandCategory, eval::flop::eval_flop_holdem};
 
 /// Returns the flop-hand category of an Omaha hand against `board`.
+///
+/// Enumerates every 2-card combination of `player`'s hole cards (not just
+/// the first 4), so this is correct for any Omaha variant regardless of how
+/// many hole cards are dealt.
 // TODO: refactor
 pub fn eval_flop_omaha(player: Card64, board: Board) -> FlopHandCategory {
     let player_cards: Vec<_> = player.iter().collect();
-
-    let c0 = player_cards[0];
-    let c1 = player_cards[1];
-    let c2 = player_cards[2];
-    let c3 = player_cards[3];
+    let n = player_cards.len();
 
     let mut max = FlopHandCategory::default();
 
-    for hand in [[c0, c1], [c0, c2], [c0, c3], [c1, c2], [c1, c3], [c2, c3]] {
-        let cur = eval_flop_holdem(hand.into_iter().collect(), board);
+    for i in 0..n {
+        for j in (i + 1)..n {
+            let hand: Card64 = [player_cards[i], player_cards[j]].into_iter().collect();
+            let cur = eval_flop_holdem(hand, board);
 
-        if cur.compare::<false>(max) == cmp::Ordering::Greater {
-            max = cur;
+            if cur.compare::<false>(max) == cmp::Ordering::Greater {
+                max = cur;
+            }
         }
     }
 

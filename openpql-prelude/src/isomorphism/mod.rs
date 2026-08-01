@@ -4,6 +4,7 @@ mod board;
 mod flush_texture_flop;
 mod flush_texture_omaha;
 mod flush_texture_omaha5;
+mod flush_texture_omaha6;
 mod flush_texture_river;
 mod flush_texture_turn;
 mod flushing_suit;
@@ -31,6 +32,7 @@ pub use isomorphic_hand::IsomorphicHand;
 pub use isomorphic_hand_n::IsomorphicHandN;
 pub use isomorphic_preflop::{
     isomorphic_preflop_holdem, isomorphic_preflop_omaha, isomorphic_preflop_omaha5,
+    isomorphic_preflop_omaha6,
 };
 use isomorphic_river_gto::IsomorphicRiverGto;
 use isomorphic_turn_gto::IsomorphicTurnGto;

@@ -2,12 +2,14 @@ use crate::{
     Card, FlushingSuit, Game, IsomorphicCard, IsomorphicHandN,
     isomorphism::{
         flush_texture_omaha::FlushTextureOmaha, flush_texture_omaha5::FlushTextureOmaha5,
+        flush_texture_omaha6::FlushTextureOmaha6,
     },
 };
 
 const N_HOLDEM: usize = Game::HOLDEM_CARDS as usize;
 const N_OMAHA: usize = Game::OMAHA_CARDS as usize;
 const N_OMAHA5: usize = Game::OMAHA5_CARDS as usize;
+const N_OMAHA6: usize = Game::OMAHA6_CARDS as usize;
 
 pub const fn isomorphic_preflop_holdem(cards: &[Card]) -> IsomorphicHandN<N_HOLDEM> {
     let Card { rank: r0, suit: s0 } = cards[0];
@@ -33,5 +35,11 @@ pub const fn isomorphic_preflop_omaha(cards: &[Card]) -> IsomorphicHandN<N_OMAHA
 pub const fn isomorphic_preflop_omaha5(cards: &[Card]) -> IsomorphicHandN<N_OMAHA5> {
     IsomorphicHandN(FlushTextureOmaha5::preflop_iso(
         cards[0], cards[1], cards[2], cards[3], cards[4],
+    ))
+}
+
+pub const fn isomorphic_preflop_omaha6(cards: &[Card]) -> IsomorphicHandN<N_OMAHA6> {
+    IsomorphicHandN(FlushTextureOmaha6::preflop_iso(
+        cards[0], cards[1], cards[2], cards[3], cards[4], cards[5],
     ))
 }

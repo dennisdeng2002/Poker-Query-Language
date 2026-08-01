@@ -1,6 +1,7 @@
 use super::tables::{
     ALL_HANDS_HOLDEM, ALL_HANDS_HOLDEM_ISO, ALL_HANDS_OMAHA, ALL_HANDS_OMAHA_ISO, ALL_HANDS_OMAHA5,
-    ALL_HANDS_OMAHA5_ISO, ALL_HANDS_SHORTDECK, ALL_HANDS_SHORTDECK_ISO,
+    ALL_HANDS_OMAHA5_ISO, ALL_HANDS_OMAHA6, ALL_HANDS_OMAHA6_ISO, ALL_HANDS_SHORTDECK,
+    ALL_HANDS_SHORTDECK_ISO,
 };
 use crate::{Card, Game, IsomorphicCard};
 
@@ -12,6 +13,7 @@ impl Game {
             Self::Holdem => &ALL_HANDS_HOLDEM,
             Self::Omaha => &ALL_HANDS_OMAHA,
             Self::Omaha5 => &ALL_HANDS_OMAHA5,
+            Self::Omaha6 => &ALL_HANDS_OMAHA6,
             Self::ShortDeck => &ALL_HANDS_SHORTDECK,
         }
     }
@@ -22,6 +24,7 @@ impl Game {
             Self::Holdem => &ALL_HANDS_HOLDEM_ISO,
             Self::Omaha => &ALL_HANDS_OMAHA_ISO,
             Self::Omaha5 => &ALL_HANDS_OMAHA5_ISO,
+            Self::Omaha6 => &ALL_HANDS_OMAHA6_ISO,
             Self::ShortDeck => &ALL_HANDS_SHORTDECK_ISO,
         }
     }
@@ -38,6 +41,7 @@ mod tests {
         assert_eq!(Game::Holdem.starting_hands().len(), 1326);
         assert_eq!(Game::Omaha.starting_hands().len(), 270_725);
         assert_eq!(Game::Omaha5.starting_hands().len(), 2_598_960);
+        assert_eq!(Game::Omaha6.starting_hands().len(), 20_358_520);
     }
 
     #[test]
@@ -59,5 +63,6 @@ mod tests {
         assert_eq!(Game::Holdem.starting_iso_hands().len(), 169);
         assert_eq!(Game::Omaha.starting_iso_hands().len(), 16_432);
         assert_eq!(Game::Omaha5.starting_iso_hands().len(), 134_459);
+        assert_eq!(Game::Omaha6.starting_iso_hands().len(), 962_988);
     }
 }
