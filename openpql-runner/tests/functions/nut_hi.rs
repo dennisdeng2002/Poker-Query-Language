@@ -39,3 +39,21 @@ fn non_nut_flush_is_not_nut() {
          from game='holdem', hero='2s3s', villain='7h8h', board='KsQsJs4c5d'",
     );
 }
+
+#[test]
+fn omaha6_guaranteed_quads_is_nut() {
+    // Both remaining aces in hand, both other aces already on a rainbow
+    // flop: guaranteed quads, no straight-flush risk possible.
+    assert_count_all(
+        "select count(nuthi(hero, flop)) \
+         from game='omaha6', hero='AsAcKhQd3s4h', board='AhAd2c'",
+    );
+}
+
+#[test]
+fn omaha6_weak_hand_is_not_nut() {
+    assert_count_none(
+        "select count(nuthi(hero, flop)) \
+         from game='omaha6', hero='2s3h4d5c9c7d', board='8h7s2d'",
+    );
+}

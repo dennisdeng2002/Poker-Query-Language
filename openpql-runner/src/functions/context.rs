@@ -72,27 +72,13 @@ impl PQLFnContext<'_> {
         self.get_board_slice(street).into()
     }
 
-    // TODO: remove vec init
-    pub fn iter_c64_player(&self) -> Vec<PQLCardSet> {
+    pub fn iter_c64_player(&self) -> Box<dyn Iterator<Item = PQLCardSet> + '_> {
         match self.game {
-            PQLGame::Holdem => HandN::<2>::iter_all::<false>()
-                .map(PQLCardSet::from)
-                .collect(),
-            PQLGame::Omaha => HandN::<4>::iter_all::<false>()
-                .map(PQLCardSet::from)
-                .collect(),
-
-            PQLGame::Omaha5 => HandN::<5>::iter_all::<false>()
-                .map(PQLCardSet::from)
-                .collect(),
-
-            PQLGame::Omaha6 => HandN::<6>::iter_all::<false>()
-                .map(PQLCardSet::from)
-                .collect(),
-
-            PQLGame::ShortDeck => HandN::<2>::iter_all::<true>()
-                .map(PQLCardSet::from)
-                .collect(),
+            PQLGame::Holdem => Box::new(HandN::<2>::iter_all::<false>().map(PQLCardSet::from)),
+            PQLGame::Omaha => Box::new(HandN::<4>::iter_all::<false>().map(PQLCardSet::from)),
+            PQLGame::Omaha5 => Box::new(HandN::<5>::iter_all::<false>().map(PQLCardSet::from)),
+            PQLGame::Omaha6 => Box::new(HandN::<6>::iter_all::<false>().map(PQLCardSet::from)),
+            PQLGame::ShortDeck => Box::new(HandN::<2>::iter_all::<true>().map(PQLCardSet::from)),
         }
     }
 }
