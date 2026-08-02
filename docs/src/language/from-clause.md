@@ -24,6 +24,8 @@ Selects the poker variant. Open PQL currently supports:
 
 - `holdem`     — Texas Hold'em (default)
 - `omaha`      — Pot-Limit Omaha (4 hole cards)
+- `omaha5`     — 5-Card Omaha (5 hole cards)
+- `omaha6`     — 6-Card Omaha (6 hole cards)
 - `shortdeck`  — 6+ Hold'em (36-card deck)
 
 See [Supported Games](./games.md) for the full description.

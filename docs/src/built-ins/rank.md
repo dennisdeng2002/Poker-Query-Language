@@ -26,7 +26,7 @@ The set of ranks that appear more than once on the board (e.g. on a paired board
 
 `TPlayer × TStreet → TRankSet`
 
-Ranks that appear more than once in the player's hand. For Omaha this lets you spot pocket pairs and trips inside the four hole cards.
+Ranks that appear more than once in the player's hand. For Omaha this lets you spot pocket pairs and trips inside the player's hole cards.
 
 ### `intersectingHandRanks(player, street)`
 

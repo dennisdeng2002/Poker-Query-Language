@@ -50,5 +50,5 @@ Any card mentioned in a player range, in the `board`, or in `dead='…'` is remo
 ## Game-Specific Notes
 
 - **Hold'em / Short Deck**: 5-card community board, all from the same deck the players draw from.
-- **Omaha**: same 5-card community board; players must use **exactly two** of their four hole cards.
+- **Omaha / Omaha5 / Omaha6**: same 5-card community board; players must use **exactly two** of their (four, five, or six) hole cards.
 - **Short Deck**: 36-card deck, so fewer possible boards and faster enumeration on river-locked queries.

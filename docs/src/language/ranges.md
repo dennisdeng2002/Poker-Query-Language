@@ -15,7 +15,7 @@ As           -- Ace of spades
 AsKh         -- Ace of spades + King of hearts
 ```
 
-A two-card hand for Hold'em or Short Deck is two such cards juxtaposed; an Omaha hand is four cards.
+A two-card hand for Hold'em or Short Deck is two such cards juxtaposed; an Omaha hand is four, five, or six cards juxtaposed, depending on the variant (`omaha`, `omaha5`, `omaha6`).
 
 ## Suit Variables
 

@@ -45,7 +45,7 @@ from   hero='AhKh', villain='QQ+', board='Ah9s2c', game='holdem'
 
 - ♠️ **Familiar syntax** — SQL-like queries for equity, ranges, and board analysis
 - ⚡ **Fast** — bit-packed cards, Monte Carlo sampling, optimized evaluators
-- 🃏 **Multi-game** — Texas Hold'em, Omaha, Short Deck
+- 🃏 **Multi-game** — Texas Hold'em, Omaha (PLO/PLO5/PLO6), Short Deck
 - 🎯 **Expressive ranges** — variable-based notation (`AwKw`, `QQ+`, `AwJw+`)
 - 🛠️ **Library + CLI** — embed the runner or use the `opql` binary
 
