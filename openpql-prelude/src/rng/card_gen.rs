@@ -47,6 +47,18 @@ impl CardGen {
         }
     }
 
+    /// Removes a specific `card` from the unused pool, or returns `None` if
+    /// it isn't available (already dealt elsewhere in this deal).
+    pub const fn take(&mut self, card: Card) -> Option<Card> {
+        if self.unused.contains_card(card) {
+            self.unused.unset(card);
+            self.used.set(card);
+            Some(card)
+        } else {
+            None
+        }
+    }
+
     /// Returns every card in `c64` to the unused pool.
     pub fn unset(&mut self, c64: Card64) {
         for c in c64.iter() {
@@ -90,6 +102,7 @@ fn random_set_bit_pos_64(mask: u64, rng: &mut impl rand::Rng) -> Option<u32> {
 #[cfg_attr(coverage_nightly, coverage(off))]
 pub mod tests {
     use super::*;
+    use crate::card;
 
     fn mk_exhausted_card_gen() -> CardGen {
         let mut g = CardGen::new::<false>(Card64::default());
@@ -109,6 +122,23 @@ pub mod tests {
         let mut g = CardGen::new::<SD>(Card64::all::<SD>());
 
         assert!(g.deal(&mut rng).is_none());
+    }
+
+    #[test]
+    fn test_take() {
+        let card = card!("As");
+        let mut g = CardGen::new::<false>(Card64::default());
+
+        assert_eq!(g.take(card), Some(card));
+        assert_eq!(g.take(card), None, "already taken");
+    }
+
+    #[test]
+    fn test_take_dead_card() {
+        let card = card!("As");
+        let mut g = CardGen::new::<false>(Card64::from(card));
+
+        assert_eq!(g.take(card), None, "dead card unavailable");
     }
 
     #[test]
