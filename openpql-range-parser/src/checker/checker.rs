@@ -100,6 +100,37 @@ mod tests {
         );
     }
 
+    /// Cross-checks the `Leaf::has_matching` fast path against ground
+    /// truth for rank-only 6-card ranges (the shape that made this fast
+    /// path worth adding): satisfiability shouldn't depend on suits at
+    /// all, and swapping out any one required rank should always break it.
+    #[quickcheck]
+    fn test_rank_only_six_card_range_matches_any_suit(cards: CardN<6>) -> TestResult {
+        let mut ranks: Vec<_> = cards.iter().map(|c| c.rank).collect();
+        ranks.sort_unstable();
+        ranks.dedup();
+
+        if ranks.len() != 6 {
+            return TestResult::discard();
+        }
+
+        let src: String = ranks.iter().map(|r| r.to_char()).collect();
+        let checker = Checker::<6, false, false>::from_src(&src).unwrap();
+
+        if !checker.is_satisfied(cards.as_slice()) {
+            return TestResult::failed();
+        }
+
+        let Some(&outsider) = Rank::all::<false>().iter().find(|r| !ranks.contains(r)) else {
+            return TestResult::discard();
+        };
+
+        let mut arr: [Card; 6] = cards.into();
+        arr[0] = Card::new(outsider, arr[0].suit);
+
+        TestResult::from_bool(!checker.is_satisfied(&arr))
+    }
+
     #[test]
     fn test_suit_const() {
         assert_checker::<2, false>("sh", &["As", "Kh", "Ah Ks"], &["As 2s"]);

@@ -40,6 +40,41 @@ where
         false
     }
 
+    /// Whether this constrain's acceptance of a card can be decided without
+    /// knowing what any other constrain ends up matched to — i.e. it has
+    /// no rank/suit variable or span (`Diff`) referencing another slot.
+    #[inline]
+    pub const fn is_context_free(&self) -> bool {
+        self.c64.is_some()
+            || (!matches!(self.rank, ConstrainRank::Diff(..) | ConstrainRank::Var(..))
+                && !matches!(self.suit, ConstrainSuit::Var(..)))
+    }
+
+    /// Whether this constrain accepts `card` on its own, for constrains
+    /// where [`Self::is_context_free`] holds. Returns `None` (rather than
+    /// guessing) for a `Diff`/`Var` constrain, since those depend on other
+    /// slots' assignments.
+    #[inline]
+    pub const fn accepts_standalone(&self, card: Card) -> Option<bool> {
+        if let Some(c64) = self.c64 {
+            return Some(c64.contains_card(card));
+        }
+
+        let rank_ok = match &self.rank {
+            ConstrainRank::Match(r16) => r16.contains_rank(card.rank),
+            ConstrainRank::Nil => true,
+            ConstrainRank::Diff(..) | ConstrainRank::Var(..) => return None,
+        };
+
+        let suit_ok = match &self.suit {
+            ConstrainSuit::Match(s4) => s4.contains_suit(card.suit),
+            ConstrainSuit::Nil => true,
+            ConstrainSuit::Var(..) => return None,
+        };
+
+        Some(rank_ok && suit_ok)
+    }
+
     #[allow(clippy::enum_glob_use)]
     pub fn from_card(t: &Term, card: RangeCard, i: Idx) -> Self {
         use RangeCard::*;
