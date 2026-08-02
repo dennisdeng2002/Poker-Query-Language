@@ -39,3 +39,19 @@ fn quads_with_top_kicker_is_nut_within_quads() {
          from game='holdem', hero='AsKh', villain='2c3d', board='AhAdAc'",
     );
 }
+
+#[test]
+fn omaha6_guaranteed_quads_is_nut_within_quads() {
+    assert_count_all(
+        "select count(nuthiforhandtype(hero, flop)) \
+         from game='omaha6', hero='AsAcKhQd3s4h', board='AhAd2c'",
+    );
+}
+
+#[test]
+fn omaha6_low_pocket_pair_is_not_nut_within_pair() {
+    assert_count_none(
+        "select count(nuthiforhandtype(hero, flop)) \
+         from game='omaha6', hero='3s3h4d5c9c7d', board='8h6d2d'",
+    );
+}
