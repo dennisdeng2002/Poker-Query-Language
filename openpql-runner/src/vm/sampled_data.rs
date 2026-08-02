@@ -44,6 +44,31 @@ fn gen_cards(
     Some(())
 }
 
+/// Deals a fully-specified hand directly, without rejection sampling: each
+/// card is either free (and gets taken) or already dealt elsewhere in this
+/// trial (a conflict, in which case the trial fails, matching what the
+/// rejection-sampling path would eventually conclude on its own).
+fn deal_literal(card_gen: &mut CardGen, hand: &mut [PQLCard], literal: &[PQLCard]) -> Option<()> {
+    for (slot, &card) in hand.iter_mut().zip(literal) {
+        *slot = card_gen.take(card)?;
+    }
+
+    Some(())
+}
+
+fn deal_hand(
+    rng: &mut impl rand::Rng,
+    card_gen: &mut CardGen,
+    hand: &mut [PQLCard],
+    literal: Option<&[PQLCard]>,
+    predicate: &FnCheckRange,
+) -> Option<()> {
+    match literal {
+        Some(cs) => deal_literal(card_gen, hand, cs),
+        None => gen_cards(rng, card_gen, hand, predicate),
+    }
+}
+
 impl VmSampledData {
     pub fn new(game: PQLGame, n_players: PQLPlayerCount, dead_cards: PQLCardSet) -> Self {
         let card_gen = if game.is_shortdeck() {
@@ -86,7 +111,7 @@ impl VmSampledData {
         for (i, range) in player_ranges.iter().enumerate() {
             let hand = &mut self.cards[i * n..(i + 1) * n];
 
-            gen_cards(rng, &mut self.card_gen, hand, &range.0)?;
+            deal_hand(rng, &mut self.card_gen, hand, range.literal(), &range.0)?;
         }
 
         Some(())
@@ -100,7 +125,13 @@ impl VmSampledData {
         let i = PQLFnContext::idx_board_start(self.n_players, self.n_holecards);
         let board = &mut self.cards[i..i + PQLBoard::N_RIVER as usize];
 
-        gen_cards(rng, &mut self.card_gen, board, &board_range.0)?;
+        deal_hand(
+            rng,
+            &mut self.card_gen,
+            board,
+            board_range.literal(),
+            &board_range.0,
+        )?;
 
         Some(())
     }
@@ -171,5 +202,44 @@ pub mod tests {
 
         assert_none(game, &["AA"], "AAA");
         assert_none(game, &["AA", "AA", "AA"], "*");
+    }
+
+    #[test]
+    fn test_literal_hands() {
+        assert_sample(PQLGame::Holdem, &["AsKs", "7c6c"], "*");
+        assert_sample(PQLGame::Omaha6, &["AsKsQsJsTs9s", "7c6c5c4c3c2c"], "*");
+    }
+
+    #[test]
+    fn test_literal_hand_collision_fails() {
+        // Both players want the same fixed cards: unsatisfiable every time,
+        // same as the generic (non-literal) rejection-sampling path would
+        // eventually conclude.
+        assert_none(PQLGame::Holdem, &["AsKs", "AsKs"], "*");
+    }
+
+    #[test]
+    fn test_literal_hand_vs_dead_card_fails() {
+        let (ps, b) = mk_ranges(PQLGame::Holdem, &["AsKs"], "*");
+        let mut sampler = VmSampledData::new(PQLGame::Holdem, 1, PQLCardSet::from(card!("As")));
+
+        assert!(sampler.sample(&mut rand::rng(), &ps, &b).is_none());
+    }
+
+    #[test]
+    fn test_literal_board_preserves_street_order() {
+        let res = mk_sample_fn(PQLGame::Holdem, &["*", "*"], "AhKdQc2s3h")().unwrap();
+        let board = &res[res.len() - 5..];
+
+        assert_eq!(
+            board,
+            [
+                card!("Ah"),
+                card!("Kd"),
+                card!("Qc"),
+                card!("2s"),
+                card!("3h"),
+            ],
+        );
     }
 }

@@ -1,6 +1,11 @@
 use super::*;
 
-pub struct PQLRange(pub(crate) FnCheckRange, RangeSrc, PQLGame);
+pub struct PQLRange(
+    pub(crate) FnCheckRange,
+    RangeSrc,
+    PQLGame,
+    Option<LiteralHand>,
+);
 
 impl fmt::Debug for PQLRange {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -15,6 +20,15 @@ impl PQLRange {
     #[inline]
     pub fn is_satisfied(&self, cs: &[PQLCard]) -> bool {
         (self.0)(cs)
+    }
+
+    /// The exact cards this range matches, if it denotes a single
+    /// fully-specified hand (e.g. `"AsKsQsJsTs9s"`, no wildcards/ranges).
+    /// Lets the sampler deal the hand directly instead of rejection-sampling
+    /// card by card.
+    #[inline]
+    pub(crate) fn literal(&self) -> Option<&[PQLCard]> {
+        self.3.as_deref()
     }
 }
 
@@ -46,10 +60,13 @@ impl TryFrom<(PQLGame, &str)> for PQLRange {
         where
             [u8; N]: smallvec::Array<Item = u8>,
         {
+            let literal = literal_hand(src, N);
+
             PQLRange(
                 Box::new(move |cs: &[PQLCard]| checker.is_satisfied(cs)),
                 src.to_string(),
                 game,
+                literal,
             )
         }
 
@@ -116,5 +133,33 @@ pub mod tests {
             res.is_satisfied(cards.as_slice()),
             cloned.is_satisfied(cards.as_slice()),
         );
+    }
+
+    #[test]
+    fn test_literal() {
+        let range = PQLRange::try_from((PQLGame::Holdem, "AsKs")).unwrap();
+
+        assert_eq!(range.literal(), Some(&[card!("As"), card!("Ks")][..]));
+    }
+
+    #[test]
+    fn test_literal_preserves_source_order() {
+        let range = PQLRange::try_from((PQLGame::Omaha, "3c4c2c5c")).unwrap();
+
+        assert_eq!(
+            range.literal(),
+            Some(&[card!("3c"), card!("4c"), card!("2c"), card!("5c")][..]),
+        );
+    }
+
+    #[test]
+    fn test_not_literal() {
+        // wildcards, pairs-as-ranks, and partial hands all fall back to the
+        // general range checker rather than the fast path.
+        for src in ["*", "AA", "As", "AsKs*", "AsKs2s3s+", "[As,Ks]QsJs"] {
+            let range = PQLRange::try_from((PQLGame::Omaha, src)).unwrap();
+
+            assert_eq!(range.literal(), None, "{src} should not be literal");
+        }
     }
 }
