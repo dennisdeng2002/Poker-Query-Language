@@ -17,21 +17,31 @@ where
         use RangeCard::*;
 
         let mut inner = VarCondition::<Suit4, Suit, N>::default();
+        let mut idx: Idx = 0;
 
-        for (i, e) in term.0.iter().enumerate() {
-            if i == self_idx as usize {
-                continue;
+        for e in &term.0 {
+            if let TermElem::Card(c) = e
+                && idx != self_idx
+            {
+                match c {
+                    CC(_, s) | VC(_, s) | AC(s) => inner.banned |= *s,
+                    CV(_, other) | VV(_, other) | AV(other) => {
+                        inner.set_indices(*other == var, idx as usize);
+                    }
+                    _ => (),
+                }
             }
 
-            match e {
-                TermElem::Card(CC(_, s) | VC(_, s) | AC(s)) => {
-                    inner.banned |= *s;
-                }
-                TermElem::Card(CV(_, other) | VV(_, other) | AV(other)) => {
-                    inner.set_indices(*other == var, i);
-                }
-                _ => (),
-            }
+            // A span's own suit-variable correlation is handled entirely
+            // within `constrain::span_suit_constrain`; it doesn't otherwise
+            // contribute to variables elsewhere in the term (a List can't
+            // carry a suit variable/concrete suit constraint either) — a
+            // span/list here just needs its flattened width counted so
+            // later cards get the right index.
+            idx += match e {
+                TermElem::Span(s) => s.elems().len().to_le_bytes()[0],
+                TermElem::Card(_) | TermElem::List(_) => 1,
+            };
         }
 
         Self(inner)
@@ -65,9 +75,9 @@ mod tests {
         (term, var, self_idx): (&str, SuitVar, Idx),
         expected: (&[Idx], &[Idx], Suit4),
     ) {
-        assert!(self_idx < 4);
+        assert!(self_idx < 7);
 
-        let cond = VarConditionSuit::<4>::from((&parse_term(term).unwrap(), var, self_idx));
+        let cond = VarConditionSuit::<7>::from((&parse_term(term).unwrap(), var, self_idx));
 
         assert_eq!(cond.0.equal.as_slice(), expected.0);
         assert_eq!(cond.0.not_equal.as_slice(), expected.1);
@@ -78,9 +88,10 @@ mod tests {
     fn test_var_info_suit() {
         use SuitVar::*;
 
+        // Flattened slots: x@0, [c]@1, [AdKh-]@2-3 (span eats 2), y@4, s@5, x@6.
         let t = "x[c][AdKh-]ysx";
-        assert_varcond((t, Y, 3), (&[], &[0, 5], s4!("s")));
-        assert_varcond((t, X, 0), (&[5], &[3], s4!("s")));
+        assert_varcond((t, Y, 4), (&[], &[0, 6], s4!("s")));
+        assert_varcond((t, X, 0), (&[6], &[4], s4!("s")));
 
         assert_varcond(("xAs", X, 0), (&[], &[], s4!("s")));
         assert_varcond(("xOs", X, 0), (&[], &[], s4!("s")));

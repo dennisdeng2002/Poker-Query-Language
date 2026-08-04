@@ -136,6 +136,52 @@ mod tests {
     }
 
     #[test]
+    fn test_span_suit_var() {
+        assert_checker::<2, false>("AwKw+", &["As Ks", "Ah Kh"], &["As Kh"]);
+        assert_checker::<2, false>("AxKy+", &["As Kh", "Ah Ks"], &["As Ks", "Ah Kh"]);
+        assert_checker::<2, false>(
+            "KwQw-JwTw",
+            &["Ks Qs", "Qs Js", "Js Ts"],
+            &["Ks Qh", "Ks Th"],
+        );
+    }
+
+    #[test]
+    fn test_span_anchor_kicker() {
+        // Anchor A fixed, kicker ranges 9..T — not a connector slide.
+        assert_checker::<2, false>(
+            "AwTw-Aw9w",
+            &["As Ts", "As 9s"],
+            &["As Js", "As Th", "Ks Ts"],
+        );
+        // Anchor K fixed, kicker ranges T..Q (docs example).
+        assert_checker::<2, false>(
+            "KwQw-KwTw",
+            &["Ks Qs", "Ks Js", "Ks Ts"],
+            &["Ks 9s", "Qs Js"],
+        );
+        // Pure connectors/pairs are unaffected by the anchor/sliding split.
+        assert_checker::<2, false>("AK-JT", &["Qs Jh"], &["Ts 9h"]);
+        assert_checker::<2, false>("KK-22", &["Kc", "2d", "7h"], &["Ac"]);
+    }
+
+    #[test]
+    fn test_span_then_external_var() {
+        // A multi-slot span ([AK-] eats 2 flattened slots) followed by
+        // variable-bearing cards: the variables must correlate with each
+        // other, not silently rebind to a card inside the span. The other
+        // two cards (4, 9) are rank-gap 5 apart, so unlike [AK-]'s gap-1
+        // family they can never satisfy the span themselves — that pins
+        // the permutation search to the intended assignment.
+        assert_checker::<4, false>(
+            "[AK-]xx",
+            &["Ks Qs 4c 9c", "2s 3s 4d 9d"],
+            &["Ks Qs 4c 9d"],
+        );
+        assert_checker::<4, false>("[AK-]RR", &["Ks Qs 4c 4d"], &["Ks Qs 4c 5d"]);
+    }
+
+    #[test]
     fn test_span_partial_first_card() {
         fn assert_partial<const N: usize>(s: &str, ok: &[&str], not_ok: &[&str])
         where
