@@ -4,7 +4,7 @@ type RankDiff = i8;
 use super::{
     Array, Card, Card64, Error, From, Idx, Itertools, LazyLock, LocInfo, PhantomData, Rank, Rank16,
     SmallVec, Suit, Suit4, ast,
-    ast::{List, ListElem, RangeCard, RankVar, Span, SpanElem, SuitVar, Term, TermElem},
+    ast::{CardSuit, List, ListElem, RangeCard, RankVar, Span, SpanElem, SuitVar, Term, TermElem},
     ops, parse_expr,
 };
 

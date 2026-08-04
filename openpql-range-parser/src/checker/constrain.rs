@@ -1,6 +1,6 @@
 use super::{
-    Array, Card, Card64, ConstrainRank, ConstrainSuit, From, Idx, List, ListElem, RangeCard,
-    Rank16, RankDiff, Span, SpanElem, Term,
+    Array, Card, Card64, CardSuit, ConstrainRank, ConstrainSuit, From, Idx, List, ListElem,
+    RangeCard, Rank16, RankDiff, Span, SpanElem, Term, VarCondition, VarConditionSuit,
 };
 
 #[derive(PartialEq, Eq, Debug, Default, Clone)]
@@ -118,22 +118,25 @@ where
         c64.into()
     }
 
-    fn from_span_head(span: &Span) -> Self {
+    fn from_span_head(span: &Span, start_idx: Idx) -> Self {
+        let elems = span_elems(span);
         let head = head(span);
 
         Self::from((
             ConstrainRank::from(r16_from_depth(head.rank() as u8, span_depth(span))),
-            ConstrainSuit::from(head.suit()),
+            span_suit_constrain(elems, 0, start_idx),
         ))
     }
 
-    pub fn from_span(span: &Span, start_idx: Idx) -> Vec<Self> {
+    /// Open-ended spans (`+`/`-`): every position slides together, preserving
+    /// the rank gaps between them (pairs-plus, connectors, etc).
+    fn from_span_sliding(span: &Span, start_idx: Idx) -> Vec<Self> {
         let elems = span_elems(span);
         let len = elems.len();
         let mut res = Vec::with_capacity(len);
         let depth = span_depth(span);
 
-        res.push(Self::from_span_head(span));
+        res.push(Self::from_span_head(span, start_idx));
 
         for (prev_idx, i) in (start_idx..).zip(1..len) {
             res.push(
@@ -143,13 +146,93 @@ where
                         elems[i - 1].rank() as RankDiff - elems[i].rank() as RankDiff,
                         r16_from_depth(elems[i].rank() as u8, depth),
                     ),
-                    ConstrainSuit::from(elems[i].suit()),
+                    span_suit_constrain(elems, i, start_idx),
                 )
                     .into(),
             );
         }
 
         res
+    }
+
+    /// Bounded spans (`a-b`): positions written with the same rank at both
+    /// ends are fixed anchors; the rest ("sliding") must move together
+    /// preserving their own pairwise rank gaps, independent of the anchors.
+    fn from_span_to(t: &[SpanElem], b: &[SpanElem], start_idx: Idx) -> Vec<Self> {
+        let len = t.len();
+        let sliding: Vec<usize> = (0..len).filter(|&i| t[i].rank() != b[i].rank()).collect();
+        let depth = sliding
+            .first()
+            .map_or(0, |&i0| b[i0].rank() as RankDiff - t[i0].rank() as RankDiff);
+
+        let mut res = Vec::with_capacity(len);
+        let mut prev_sliding: Option<(Idx, usize)> = None;
+
+        for (flat_idx, i) in (start_idx..).zip(0..len) {
+            let is_sliding = sliding.contains(&i);
+
+            let rank = if !is_sliding {
+                ConstrainRank::from(t[i].rank())
+            } else if let Some((prev_idx, prev_pos)) = prev_sliding {
+                ConstrainRank::Diff(
+                    prev_idx,
+                    t[prev_pos].rank() as RankDiff - t[i].rank() as RankDiff,
+                    r16_from_depth(t[i].rank() as u8, depth),
+                )
+            } else {
+                ConstrainRank::from(r16_from_depth(t[i].rank() as u8, depth))
+            };
+
+            if is_sliding {
+                prev_sliding = Some((flat_idx, i));
+            }
+
+            res.push((rank, span_suit_constrain(t, i, start_idx)).into());
+        }
+
+        res
+    }
+
+    pub fn from_span(span: &Span, start_idx: Idx) -> Vec<Self> {
+        match span {
+            Span::Up(_) | Span::Down(_) => Self::from_span_sliding(span, start_idx),
+            Span::To(t, b) => Self::from_span_to(t, b, start_idx),
+        }
+    }
+}
+
+/// Suit constraint for the span element at `pos`, correlating suit variables
+/// with sibling positions within the same span (`start_idx..start_idx+elems.len()`).
+fn span_suit_constrain<const N: usize>(
+    elems: &[SpanElem],
+    pos: usize,
+    start_idx: Idx,
+) -> ConstrainSuit<N>
+where
+    [Idx; N]: Array<Item = Idx>,
+{
+    match elems[pos].suit() {
+        None => ConstrainSuit::Nil,
+        Some(CardSuit::Const(s)) => ConstrainSuit::from(s),
+        Some(CardSuit::Var(v)) => {
+            let mut cond = VarCondition::default();
+
+            for (j, e) in elems.iter().enumerate() {
+                if j == pos {
+                    continue;
+                }
+
+                match e.suit() {
+                    Some(CardSuit::Const(s)) => cond.banned |= s,
+                    Some(CardSuit::Var(other)) => {
+                        cond.set_indices(other == v, start_idx as usize + j);
+                    }
+                    None => (),
+                }
+            }
+
+            ConstrainSuit::Var(VarConditionSuit(cond))
+        }
     }
 }
 
